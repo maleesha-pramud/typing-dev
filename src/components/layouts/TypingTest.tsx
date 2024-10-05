@@ -106,8 +106,9 @@ function TypingTest() {
         handleMakeAllNormal();
     };
 
-    const handleEnterPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    const handleEnterPress = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
         if (e.key === 'Enter') {
+            e.preventDefault();
             if (isTyping) {
                 handleFinish();
             } else {
@@ -117,16 +118,16 @@ function TypingTest() {
     }
 
     const fetchPhrases = async () => {
-        const generatedPhrase = await phraseGenerator(100, 'programmer', 'easy');
+        const generatedPhrase = await phraseGenerator(300, 'programmer', 'easy');
         const trimmedPhrases = generatedPhrase.map((phrase: string) => phrase.trim());
         console.log(trimmedPhrases);
         setPhrasesArray(trimmedPhrases);
     };
 
     const handleGetNextPhrase = () => {
-        if(!phrasesArray) return;
+        if (!phrasesArray) return;
         const index = phrasesArray.findIndex((item) => item === phrase?.string) + 1;
-        console.log('index',index)
+        console.log('index', index)
         if (index < phrasesArray.length) {
             setPhrase({
                 string: phrasesArray[index],
@@ -139,32 +140,33 @@ function TypingTest() {
 
     return (
         <div className='p-[50px]'>
-            <p className='text-[20px] text-gray-400' id='phrase'>
+            <div className="flex justify-end">
+                <div className=" my-5 bg-[#93d5e1] p-5 rounded-[20px] text-black font-bold">
+                    <p>WPM: {wpm}</p>
+                    <p>Accuracy: {accuracy.toFixed(2)}%</p>
+                    <p>TIme: {secondsElapsed}</p>
+                </div>
+            </div>
+            <p className='text-[20px] text-gray-400 mb-3' id='phrase'>
                 {phrase?.array?.map((item: string, index: number) => (
                     <span key={index} className=''>{item}</span>
                 ))}
             </p>
-            <input
-                type="text"
+            <textarea
                 value={userInput}
                 onChange={handleInputChange}
-                className='w-full px-4 py-2 text-white bg-[#0a0a0ae8]'
+                className='w-full h-[150px] px-5 py-4 text-white bg-[#0a0a0ae8] rounded-[20px] focus:outline-none mb-5'
                 onKeyDown={handleEnterPress}
-            />
-            <div className="mt-5">
-                <p>WPM: {wpm}</p>
-                <p>Accuracy: {accuracy}%</p>
-                <p>TIme: {secondsElapsed}</p>
-                <div className="flex justify-end gap-4 items-center">
-                    {!phrase ? (
-                        <button onClick={fetchPhrases} className='px-4 py-2 rounded-[6px] bg-gray-400 text-black'>Start</button>
-                    ) : (
-                        <button onClick={handleRestart} className='px-4 py-2 rounded-[6px] bg-gray-400 text-black'>Restart</button>
-                    )}
-                    {isTyping && (
-                        <button onClick={handleFinish} className='px-4 py-2 rounded-[6px] bg-gray-400 text-black'>Finish</button>
-                    )}
-                </div>
+            ></textarea>
+            <div className="flex justify-end gap-4 items-center">
+                {!phrase ? (
+                    <button onClick={fetchPhrases} className='px-4 py-2 rounded-[6px] bg-gray-400 text-black'>Start</button>
+                ) : (
+                    <button onClick={handleRestart} className='px-4 py-2 rounded-[6px] bg-gray-400 text-black'>Restart</button>
+                )}
+                {isTyping && (
+                    <button onClick={handleFinish} className='px-4 py-2 rounded-[6px] bg-gray-400 text-black'>Finish</button>
+                )}
             </div>
         </div>
     );
