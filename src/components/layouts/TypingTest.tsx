@@ -141,10 +141,10 @@ function TypingTest() {
     return (
         <div className='p-[50px]'>
             <div className="flex justify-end">
-                <div className=" my-5 bg-[#93d5e1] p-5 rounded-[20px] text-black font-bold">
+                <div className=" my-5 bg-[#93d5e1] p-5 rounded-[20px] text-black font-semibold">
                     <p>WPM: {wpm}</p>
                     <p>Accuracy: {accuracy.toFixed(2)}%</p>
-                    <p>TIme: {secondsElapsed}</p>
+                    <p>Time: {secondsElapsed}</p>
                 </div>
             </div>
             <p className='text-[20px] text-gray-400 mb-3' id='phrase'>
