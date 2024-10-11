@@ -5,7 +5,10 @@ import phraseGenerator from '@/utils/phraseGenerator';
 function TypingTest() {
     const [phrasesArray, setPhrasesArray] = useState<string[]>();
 
-    const [phrase, setPhrase] = useState<any>(null);
+    const [phrase, setPhrase] = useState<{
+        string: string,
+        array: string[]
+    } | null>(null);
     const [userInput, setUserInput] = useState('');
     const [currentCharIndex, setCurrentCharIndex] = useState(0);
     const [isTyping, setIsTyping] = useState(false);
@@ -17,12 +20,12 @@ function TypingTest() {
     useEffect(() => {
         if (isTyping) {
             if (userInput.length > currentCharIndex) {
-                const isCorrect = userInput[currentCharIndex] === phrase.string[currentCharIndex];
+                const isCorrect = userInput[currentCharIndex] === phrase!.string[currentCharIndex];
                 // console.log(userInput[currentCharIndex], phrase.string[currentCharIndex]);
                 if (isCorrect) {
                     handleMakeCharCorrect(currentCharIndex);
                     // console.log(phrase.string.length, userInput.length)
-                    if (phrase.string.length === userInput.length) {
+                    if (phrase!.string.length === userInput.length) {
                         handleFinish();
                     }
                 } else {
