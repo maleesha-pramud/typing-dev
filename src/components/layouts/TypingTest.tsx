@@ -1,14 +1,13 @@
 'use client'
 import React, { useState, useEffect } from 'react';
 import phraseGenerator from '@/utils/phraseGenerator';
+import StartScreen from '../elements/screens/StartScreen';
 
 function TypingTest() {
     const [phrasesArray, setPhrasesArray] = useState<string[]>();
 
-    const [phrase, setPhrase] = useState<{
-        string: string,
-        array: string[]
-    } | null>(null);
+    const [isStarted, setIsStarted] = useState<boolean>(false);
+    const [phrase, setPhrase] = useState<{ string: string, array: string[] } | null>(null);
     const [userInput, setUserInput] = useState('');
     const [currentCharIndex, setCurrentCharIndex] = useState(0);
     const [isTyping, setIsTyping] = useState(false);
@@ -125,6 +124,7 @@ function TypingTest() {
         const trimmedPhrases = generatedPhrase.map((phrase: string) => phrase.trim());
         console.log(trimmedPhrases);
         setPhrasesArray(trimmedPhrases);
+        setIsStarted(true);
     };
 
     const handleGetNextPhrase = () => {
@@ -141,37 +141,62 @@ function TypingTest() {
         }
     }
 
+    useEffect(() => {
+        if (isTyping) {
+            if (userInput.length > currentCharIndex) {
+                const isCorrect = userInput[currentCharIndex] === phrase?.string[currentCharIndex];
+                if (isCorrect) {
+                    handleMakeCharCorrect(currentCharIndex);
+                    if (phrase.string.length === userInput.length) {
+                        handleFinish();
+                    }
+                } else {
+                    handleMakeCharIncorrect(currentCharIndex);
+                }
+                setCurrentCharIndex(prevIndex => prevIndex + 1); // Functional update
+                setAccuracy((accuracy * currentCharIndex + (isCorrect ? 100 : 0)) / (currentCharIndex + 1)); // Still depends on currentCharIndex.
+            }
+        }
+    }, [userInput, isTyping, phrase, accuracy, currentCharIndex, handleFinish]); // Added currentCharIndex.
+
+
     return (
-        <div className='p-[50px]'>
-            <div className="flex justify-end">
-                <div className=" my-5 bg-[#93d5e1] p-5 rounded-[20px] text-black font-semibold">
-                    <p>WPM: {wpm}</p>
-                    <p>Accuracy: {accuracy.toFixed(2)}%</p>
-                    <p>Time: {secondsElapsed}</p>
+        <>
+            <div className='p-[50px]'>
+                <div className="flex justify-end">
+                    <div className=" my-5 bg-[#93d5e1] p-5 rounded-[20px] text-black font-semibold">
+                        <p>WPM: {wpm}</p>
+                        <p>Accuracy: {accuracy.toFixed(2)}%</p>
+                        <p>Time: {secondsElapsed}</p>
+                    </div>
+                </div>
+                <p className='text-[20px] text-gray-400 mb-3' id='phrase'>
+                    {phrase?.array?.map((item: string, index: number) => (
+                        <span key={index} className=''>{item}</span>
+                    ))}
+                </p>
+                <textarea
+                    value={userInput}
+                    onChange={handleInputChange}
+                    className='w-full h-[150px] px-5 py-4 text-white bg-[#0a0a0ae8] rounded-[20px] focus:outline-none mb-5'
+                    onKeyDown={handleEnterPress}
+                ></textarea>
+                <div className="flex justify-end gap-4 items-center">
+                    {!phrase ? (
+                        <button onClick={fetchPhrases} className='px-4 py-2 rounded-[6px] bg-gray-400 text-black'>Start</button>
+                    ) : (
+                        <button onClick={handleRestart} className='px-4 py-2 rounded-[6px] bg-gray-400 text-black'>Restart</button>
+                    )}
+                    {isTyping && (
+                        <button onClick={handleFinish} className='px-4 py-2 rounded-[6px] bg-gray-400 text-black'>Finish</button>
+                    )}
                 </div>
             </div>
-            <p className='text-[20px] text-gray-400 mb-3' id='phrase'>
-                {phrase?.array?.map((item: string, index: number) => (
-                    <span key={index} className=''>{item}</span>
-                ))}
-            </p>
-            <textarea
-                value={userInput}
-                onChange={handleInputChange}
-                className='w-full h-[150px] px-5 py-4 text-white bg-[#0a0a0ae8] rounded-[20px] focus:outline-none mb-5'
-                onKeyDown={handleEnterPress}
-            ></textarea>
-            <div className="flex justify-end gap-4 items-center">
-                {!phrase ? (
-                    <button onClick={fetchPhrases} className='px-4 py-2 rounded-[6px] bg-gray-400 text-black'>Start</button>
-                ) : (
-                    <button onClick={handleRestart} className='px-4 py-2 rounded-[6px] bg-gray-400 text-black'>Restart</button>
-                )}
-                {isTyping && (
-                    <button onClick={handleFinish} className='px-4 py-2 rounded-[6px] bg-gray-400 text-black'>Finish</button>
-                )}
-            </div>
-        </div>
+
+            {!isStarted && (
+                <StartScreen fetchPhrases={fetchPhrases} />
+            )}
+        </>
     );
 }
 
