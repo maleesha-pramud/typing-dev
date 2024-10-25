@@ -1,4 +1,5 @@
 import type { Config } from "tailwindcss";
+import tailwindcssAnimate from 'tailwindcss-animate';
 
 const config: Config = {
     darkMode: ["class"],
@@ -49,7 +50,10 @@ const config: Config = {
   				'3': 'hsl(var(--chart-3))',
   				'4': 'hsl(var(--chart-4))',
   				'5': 'hsl(var(--chart-5))'
-  			}
+  			},
+				backgroundImage: {
+					'accent-dark': 'linear-gradient(to top left, #18181b, rgba(63, 63, 70, 0.1), #18181b)'
+				}
   		},
   		borderRadius: {
   			lg: 'var(--radius)',
@@ -58,6 +62,6 @@ const config: Config = {
   		}
   	}
   },
-  plugins: [require("tailwindcss-animate")],
+  plugins: [tailwindcssAnimate],
 };
 export default config;

@@ -1,7 +1,8 @@
 'use client'
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import phraseGenerator from '@/utils/phraseGenerator';
 import StartScreen from '../elements/screens/StartScreen';
+import PhrasesSettingsModal from '../elements/models/PhrasesSettingsModal';
 
 function TypingTest() {
     const [phrasesArray, setPhrasesArray] = useState<string[]>();
@@ -16,25 +17,7 @@ function TypingTest() {
     const [wpm, setWpm] = useState(0);
     const [accuracy, setAccuracy] = useState(0);
 
-    useEffect(() => {
-        if (isTyping) {
-            if (userInput.length > currentCharIndex) {
-                const isCorrect = userInput[currentCharIndex] === phrase!.string[currentCharIndex];
-                // console.log(userInput[currentCharIndex], phrase.string[currentCharIndex]);
-                if (isCorrect) {
-                    handleMakeCharCorrect(currentCharIndex);
-                    // console.log(phrase.string.length, userInput.length)
-                    if (phrase!.string.length === userInput.length) {
-                        handleFinish();
-                    }
-                } else {
-                    handleMakeCharIncorrect(currentCharIndex);
-                }
-                setCurrentCharIndex(currentCharIndex + 1);
-                setAccuracy((accuracy * currentCharIndex + (isCorrect ? 100 : 0)) / (currentCharIndex + 1));
-            }
-        }
-    }, [userInput, isTyping, phrase]);
+    const typingAreaRef = useRef<HTMLTextAreaElement>(null);
 
     useEffect(() => {
         if (phrasesArray && phrasesArray.length > 0) {
@@ -88,13 +71,13 @@ function TypingTest() {
         }
     };
 
-    const handleFinish = () => {
-        console.log('finished')
+    const handleFinish = useCallback(() => {
+        console.log('finished');
         setIsTyping(false);
         clearInterval(startCountDown);
         const wordsTyped = userInput.split(' ').length;
         setWpm(Math.round(wordsTyped / (secondsElapsed / 60)));
-    };
+    }, [userInput, secondsElapsed, startCountDown, setIsTyping, setWpm]);
 
     const handleRestart = () => {
         setUserInput('');
@@ -124,7 +107,7 @@ function TypingTest() {
         const trimmedPhrases = generatedPhrase.map((phrase: string) => phrase.trim());
         console.log(trimmedPhrases);
         setPhrasesArray(trimmedPhrases);
-        setIsStarted(true);
+        typingAreaRef.current?.focus();
     };
 
     const handleGetNextPhrase = () => {
@@ -153,21 +136,27 @@ function TypingTest() {
                 } else {
                     handleMakeCharIncorrect(currentCharIndex);
                 }
-                setCurrentCharIndex(prevIndex => prevIndex + 1); // Functional update
-                setAccuracy((accuracy * currentCharIndex + (isCorrect ? 100 : 0)) / (currentCharIndex + 1)); // Still depends on currentCharIndex.
+                setCurrentCharIndex(prevIndex => prevIndex + 1);
+                setAccuracy((accuracy * currentCharIndex + (isCorrect ? 100 : 0)) / (currentCharIndex + 1));
             }
         }
-    }, [userInput, isTyping, phrase, accuracy, currentCharIndex, handleFinish]); // Added currentCharIndex.
+    }, [userInput, isTyping, phrase, accuracy, currentCharIndex, handleFinish]);
 
 
     return (
         <>
             <div className='p-[50px]'>
-                <div className="flex justify-end">
-                    <div className=" my-5 bg-[#93d5e1] p-5 rounded-[20px] text-black font-semibold">
-                        <p>WPM: {wpm}</p>
-                        <p>Accuracy: {accuracy.toFixed(2)}%</p>
-                        <p>Time: {secondsElapsed}</p>
+                <div className="flex justify-between">
+                    <div className='flex-1'></div>
+                    <div className='flex-1 flex items-center justify-center'>
+                        <PhrasesSettingsModal />
+                    </div>
+                    <div className="flex-1 my-5 flex justify-end">
+                        <div className="w-fit bg-[#93d5e1] p-5 rounded-[20px] text-black font-semibold">
+                            <p>WPM: {wpm}</p>
+                            <p>Accuracy: {accuracy.toFixed(2)}%</p>
+                            <p>Time: {secondsElapsed}</p>
+                        </div>
                     </div>
                 </div>
                 <p className='text-[20px] text-gray-400 mb-3' id='phrase'>
@@ -176,6 +165,7 @@ function TypingTest() {
                     ))}
                 </p>
                 <textarea
+                    ref={typingAreaRef}
                     value={userInput}
                     onChange={handleInputChange}
                     className='w-full h-[150px] px-5 py-4 text-white bg-[#0a0a0ae8] rounded-[20px] focus:outline-none mb-5'
@@ -183,18 +173,18 @@ function TypingTest() {
                 ></textarea>
                 <div className="flex justify-end gap-4 items-center">
                     {!phrase ? (
-                        <button onClick={fetchPhrases} className='px-4 py-2 rounded-[6px] bg-gray-400 text-black'>Start</button>
+                        <button onClick={fetchPhrases} className='px-4 py-2 rounded-[6px] bg-gray-400 text-black font-semibold hover:bg-slate-300'>Start</button>
                     ) : (
-                        <button onClick={handleRestart} className='px-4 py-2 rounded-[6px] bg-gray-400 text-black'>Restart</button>
+                        <button onClick={handleRestart} className='px-4 py-2 rounded-[6px] bg-gray-400 text-black font-semibold hover:bg-slate-300'>Restart</button>
                     )}
                     {isTyping && (
-                        <button onClick={handleFinish} className='px-4 py-2 rounded-[6px] bg-gray-400 text-black'>Finish</button>
+                        <button onClick={handleFinish} className='px-4 py-2 rounded-[6px] bg-gray-400 text-black font-semibold hover:bg-green-500'>Finish</button>
                     )}
                 </div>
             </div>
 
             {!isStarted && (
-                <StartScreen fetchPhrases={fetchPhrases} />
+                <StartScreen fetchPhrases={fetchPhrases} setIsStarted={setIsStarted} />
             )}
         </>
     );
