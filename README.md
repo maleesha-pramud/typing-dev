@@ -7,7 +7,7 @@ A modern, AI-powered typing test application built with Next.js that generates c
 
 ## � Preview
 
-![Application Preview](preview.gif)
+![Application Preview](public/gif/preview.gif)
 
 ## �🚀 Features
 
